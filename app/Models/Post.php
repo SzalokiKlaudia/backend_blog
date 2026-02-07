@@ -26,4 +26,10 @@ class Post extends Model
     public function comments(){
         return $this->hasMany(Comment::class,'post_id');
     }
+
+    protected static function booted(){
+        static::deleting(function ($post) {
+            $post->comments()->delete();
+        });
+    }
 }
