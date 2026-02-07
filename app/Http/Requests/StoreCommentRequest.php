@@ -11,7 +11,7 @@ class StoreCommentRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,16 @@ class StoreCommentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'comment' => 'required|string|min:3|max:1000',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+           'comment.required' => 'Please provide a comment.',
+            'comment.string' => 'Must be string.',
+            'comment.max' => 'The comment is too long.',
         ];
     }
 }

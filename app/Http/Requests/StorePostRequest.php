@@ -11,7 +11,7 @@ class StorePostRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,18 @@ class StorePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'title' => 'required|string|max:100',
+            'content' => 'required|string|min:10',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+           'title.required' => 'Please provide a title for your post.',
+            'title.max' => 'The title is too long (maximum 100 characters).',
+            'content.required' => 'The post content cannot be empty.',
+            'content.min' => 'The content must be at least 10 characters long.',
         ];
     }
 }
