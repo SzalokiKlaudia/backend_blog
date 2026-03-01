@@ -24,6 +24,13 @@ class StorePostRequest extends FormRequest
         return [
             'title' => 'required|string|max:100',
             'content' => 'required|string|min:10',
+
+            'image' => [
+                'nullable',           
+                'image',              
+                'mimes:jpg,jpeg,png', 
+                'max:2048',           
+            ],
         ];
     }
 
@@ -34,6 +41,8 @@ class StorePostRequest extends FormRequest
             'title.max' => 'The title is too long (maximum 100 characters).',
             'content.required' => 'The post content cannot be empty.',
             'content.min' => 'The content must be at least 10 characters long.',
+            'image.image' => 'The file must be an image!',
+            'image.max' => 'The image size can not be more than 2MB.',
         ];
     }
 }

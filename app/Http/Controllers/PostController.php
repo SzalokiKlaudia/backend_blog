@@ -14,7 +14,9 @@ class PostController extends Controller
      */
     public function listAllPosts()
     {
-        $data = Post::all();
+        $data = Post::with(['pictures', 'user'])
+            ->orderBy('created_at', 'desc'),
+            ->pagination(10);
 
         if ($data->isEmpty()) {
             return response()->json([
@@ -29,7 +31,8 @@ class PostController extends Controller
 
     public function showAPostWithAllComments($id)
     {
-        $post = Post::with('comments')->find($id);
+        $post = Post::with(['pictures','user','comments.user'])->find($id);
+        //kommenteteket a hozzá tartozó usereivel is
 
         if(!$post){
             return response()->json(['message' => 'Post not found'],404);
@@ -55,10 +58,17 @@ class PostController extends Controller
             'content' => $request->validated()['content']
         ]);
 
+        if($request->hasFile('image')){
+            $path = $request->file('image')->store('posts','public');
+            $newPost->pictures()->create([
+                'path' => $path,
+            ]);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'You have succesfully added the post to the blog!',
-            'data' => $newPost,
+            'data' => $newPost->load('pictures'),
         ], 201);
     }
 
@@ -82,6 +92,9 @@ class PostController extends Controller
                 'message' => 'You have no access for this process.'
             ], 403);
         }
+
+        $post->load('pictures');
+
         return response()->json($post);
     }
 
@@ -100,10 +113,20 @@ class PostController extends Controller
 
         if($userId === $postId){
             $post->update($request->validated());
+
+            if($request->hasFile('image')){
+                $path = $request->file('image')->store('posts','public');
+
+                $post->pictures()->updateOrCreate(
+                    ['post_id' => $post->id],
+                    ['path' => $path]
+                );
+            }
     
             return response()->json([
+                'success' => true,
                 'message' => 'Post updated!',
-                'post' => $post
+                'post' => $post->load('pictures')
             ]);
 
         }
@@ -128,13 +151,15 @@ class PostController extends Controller
         $postOwner = $post->user_id;
 
         if($postOwner === $userId){
+        
+            $post->comments()->delete(); 
+            $post->pictures()->delete();
             $post->delete();
+            
             return response()->json(['message' => 'Post deleted successfully!']);
 
         }
         return response()->json(['error' => 'You do not have permission to delete this post'], 403);
-
-
 
         
     }

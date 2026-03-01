@@ -27,9 +27,14 @@ class Post extends Model
         return $this->hasMany(Comment::class,'post_id');
     }
 
+    public function pictures(){
+        return $this->hasMany(Picture::class,'post_id');
+    }
+
     protected static function booted(){
         static::deleting(function ($post) {
             $post->comments()->delete();
+            $post->pictures()->delete();
         });
     }
 }
